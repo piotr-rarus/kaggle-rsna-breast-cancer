@@ -43,3 +43,6 @@ build: isort black pre_commit flake8 mypy test
 # Misc
 jupyter:
 	poetry run jupyter notebook
+
+profile_data:
+	poetry run python -m src.cli.profile_data --data-path=data/train.csv --output-dir=output/eda
