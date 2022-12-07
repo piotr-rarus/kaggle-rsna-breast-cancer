@@ -58,9 +58,16 @@ def main(data_dir: Path, output_dir: Path, resolution: int, n_jobs: int) -> None
 
 def __prepare_dicom(dicom_path: Path, output_dir: Path, resolution: int) -> None:
     dicom = dcmread(dicom_path)
-    image = dicom.pixel_array.astype(float)
-    image = image / image.max() * 255
+    image = dicom.pixel_array
+    image = image - image.min()
+    image = image / image.max()
+
+    if dicom.PhotometricInterpretation == "MONOCHROME1":
+        image = 1 - image
+
+    image *= 255
     image = image.astype(np.uint8)
+
     image_dir = output_dir / dicom_path.parent.name
     image_dir.mkdir(exist_ok=True, parents=True)
     image_path = image_dir / f"{dicom_path.stem}.png"
