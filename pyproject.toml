@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "python-template"
+name = "kaggle-rsna-breast-cancer"
 version = "0.1.0"
-description = "Python template repository for ML projects"
-authors = ["peepo-dev-family"]
+description = "Kaggle RSNA breat cancer detection"
+authors = [""]
 
 [tool.poetry.dependencies]
 jupyter = "^1.0.0"
