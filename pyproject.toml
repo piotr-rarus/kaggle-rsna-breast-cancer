@@ -1,0 +1,73 @@
+[tool.poetry]
+name = "python-template"
+version = "0.1.0"
+description = "Python template repository for ML projects"
+authors = ["peepo-dev-family"]
+
+[tool.poetry.dependencies]
+jupyter = "^1.0.0"
+pandas = "^1.4.2"
+plotly = "^5.11.0"
+python = "~3.9"
+scikit-learn = "^1.1.1"
+seaborn = "^0.11.2"
+
+[tool.poetry.dev-dependencies]
+black = "^22.8.0"
+coverage = "^6.4.4"
+flake8 = "^5.0.4"
+isort = "^5.10.1"
+mypy = "^0.971"
+pre-commit = "^2.19.0"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | data
+  | notebooks
+  | dist
+  # The following are specific to Black, you probably don't want those.
+  | blib2to3
+  | tests/data
+  | profiling
+)/
+'''
+
+[tool.vulture]
+make_whitelist = true
+min_confidence = 80
+paths = ["src"]
+sort_by_size = true
+verbose = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra --log-level=CRITICAL"
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::FutureWarning",
+    'ignore:function ham\(\) is deprecated:DeprecationWarning',
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
