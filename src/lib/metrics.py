@@ -1,24 +1,22 @@
-def foo(a: int) -> int:
-    return a + 1
+import numpy as np
+from numpy.typing import NDArray
 
-def pfbeta(labels: list[int], predictions: list[float], beta: float) -> float:
-    y_true_count = 0
-    ctp = 0.0
-    cfp = 0.0
 
-    for idx in range(len(labels)):
-        prediction = min(max(predictions[idx], 0), 1)
-        if (labels[idx]):
-            y_true_count += 1
-            ctp += prediction
-        else:
-            cfp += prediction
-
+def pfbeta(
+    labels: NDArray[np.int_], preds: NDArray[np.float_], beta: float = 1.0
+) -> float:
+    preds = preds.clip(0, 1)
+    y_true_count = labels.sum()
+    ctp = preds[labels == 1].sum()
+    cfp = preds[labels == 0].sum()
     beta_squared = beta * beta
     c_precision = ctp / (ctp + cfp)
     c_recall = ctp / y_true_count
-    if (c_precision > 0 and c_recall > 0):
-        result = (1 + beta_squared) * (c_precision * c_recall) / (beta_squared * c_precision + c_recall)
+    if c_precision > 0 and c_recall > 0:
+        result: float = (
+            (1 + beta_squared)
+            * (c_precision * c_recall)
+            / (beta_squared * c_precision + c_recall)
+        )
         return result
-    else:
-        return 0
+    return 0.0
