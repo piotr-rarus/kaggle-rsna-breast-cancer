@@ -155,7 +155,7 @@ dev = ["Sphinx (==4.3.2)", "black (==22.3.0)", "build (==0.8.0)", "flake8 (==4.0
 
 [[package]]
 name = "certifi"
-version = "2022.9.24"
+version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -1416,6 +1416,17 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pydicom"
+version = "2.3.1"
+description = "A pure Python package for reading and writing DICOM data"
+category = "main"
+optional = false
+python-versions = ">=3.6.1"
+
+[package.extras]
+docs = ["numpy", "numpydoc", "matplotlib", "pillow", "sphinx", "sphinx-rtd-theme", "sphinx-gallery", "sphinxcontrib-napoleon", "sphinx-copybutton"]
+
+[[package]]
 name = "pyflakes"
 version = "3.0.1"
 description = "passive checker of Python programs"
@@ -2039,6 +2050,17 @@ types-docutils = "*"
 types-setuptools = "*"
 
 [[package]]
+name = "types-requests"
+version = "2.28.11.5"
+description = "Typing stubs for requests"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-urllib3 = "<1.27"
+
+[[package]]
 name = "types-setuptools"
 version = "65.6.0.2"
 description = "Typing stubs for setuptools"
@@ -2282,8 +2304,8 @@ bleach = [
     {file = "bleach-5.0.1.tar.gz", hash = "sha256:0d03255c47eb9bd2f26aa9bb7f2107732e7e8fe195ca2f64709fcf3b0a4a085c"},
 ]
 certifi = [
-    {file = "certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},
-    {file = "certifi-2022.9.24.tar.gz", hash = "sha256:0d9c601124e5a6ba9712dbc60d9c53c21e34f5f641fe83002317394311bdce14"},
+    {file = "certifi-2022.12.7-py3-none-any.whl", hash = "sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18"},
+    {file = "certifi-2022.12.7.tar.gz", hash = "sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3"},
 ]
 cffi = [
     {file = "cffi-1.15.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:a66d3508133af6e8548451b25058d5812812ec3798c886bf38ed24a98216fab2"},
@@ -3200,6 +3222,10 @@ pydantic = [
     {file = "pydantic-1.10.2-py3-none-any.whl", hash = "sha256:1b6ee725bd6e83ec78b1aa32c5b1fa67a3a65badddde3976bca5fe4568f27709"},
     {file = "pydantic-1.10.2.tar.gz", hash = "sha256:91b8e218852ef6007c2b98cd861601c6a09f1aa32bbbb74fab5b1c33d4a1e410"},
 ]
+pydicom = [
+    {file = "pydicom-2.3.1-py3-none-any.whl", hash = "sha256:b00bacdabc1f8a18b61a08bb6cd0f41c419446531638c895a708c22a35d69cfe"},
+    {file = "pydicom-2.3.1.tar.gz", hash = "sha256:655db29c21cb333a4f9dfffdeaa80995b1d3b89e98b66a16f5cc886e5b338028"},
+]
 pyflakes = [
     {file = "pyflakes-3.0.1-py2.py3-none-any.whl", hash = "sha256:ec55bf7fe21fff7f1ad2f7da62363d749e2a470500eab1b555334b67aa1ef8cf"},
     {file = "pyflakes-3.0.1.tar.gz", hash = "sha256:ec8b276a6b60bd80defed25add7e439881c19e64850afd9b346283d4165fd0fd"},
@@ -3725,6 +3751,10 @@ types-pillow = [
 types-pygments = [
     {file = "types-Pygments-2.13.1.1.tar.gz", hash = "sha256:bcc24601e698b1393744f77901376d55b7a9a6a23d4f4ba80c84347c1f7939b1"},
     {file = "types_Pygments-2.13.1.1-py3-none-any.whl", hash = "sha256:9c789be357e21f611d215af3ae9dfcc24469dc4be96e96ea9b4e5e0c783afba5"},
+]
+types-requests = [
+    {file = "types-requests-2.28.11.5.tar.gz", hash = "sha256:a7df37cc6fb6187a84097da951f8e21d335448aa2501a6b0a39cbd1d7ca9ee2a"},
+    {file = "types_requests-2.28.11.5-py3-none-any.whl", hash = "sha256:091d4a5a33c1b4f20d8b1b952aa8fa27a6e767c44c3cf65e56580df0b05fd8a9"},
 ]
 types-setuptools = [
     {file = "types-setuptools-65.6.0.2.tar.gz", hash = "sha256:ad60ccf01d626de9762224448f36c13e0660e863afd6dc11d979b3739a6c7d24"},
