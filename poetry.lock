@@ -1435,6 +1435,63 @@ python-versions = ">=3.6"
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "pylibjpeg"
+version = "1.4.0"
+description = "A Python framework for decoding JPEG and decoding/encoding DICOM RLE data, with a focus on supporting pydicom"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = "*"
+pylibjpeg-libjpeg = {version = "*", optional = true, markers = "extra == \"all\""}
+pylibjpeg-openjpeg = {version = "*", optional = true, markers = "extra == \"all\""}
+pylibjpeg-rle = {version = "*", optional = true, markers = "extra == \"all\""}
+
+[package.extras]
+all = ["pylibjpeg-libjpeg", "pylibjpeg-openjpeg", "pylibjpeg-rle"]
+libjpeg = ["pylibjpeg-libjpeg"]
+openjpeg = ["pylibjpeg-openjpeg"]
+rle = ["pylibjpeg-rle"]
+
+[[package]]
+name = "pylibjpeg-libjpeg"
+version = "1.3.2"
+description = "A Python wrapper for libjpeg, with a focus on use as a plugin for for pylibjpeg"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = {version = ">=1.22", markers = "python_version >= \"3.8\""}
+
+[[package]]
+name = "pylibjpeg-openjpeg"
+version = "1.2.1"
+description = "A Python wrapper for openjpeg, with a focus on use as a plugin for for pylibjpeg"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = {version = ">=1.22", markers = "python_version >= \"3.8\""}
+
+[[package]]
+name = "pylibjpeg-rle"
+version = "1.3.0"
+description = "Python bindings for a fast RLE decoder/encoder, with a focus on use as a plugin for pylibjpeg"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.20"
+
+[package.extras]
+benchmarks = ["pydicom", "numpy", "asv"]
+tests = ["pytest", "pydicom", "numpy"]
+
+[[package]]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -3150,6 +3207,86 @@ pyflakes = [
 pygments = [
     {file = "Pygments-2.13.0-py3-none-any.whl", hash = "sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42"},
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
+]
+pylibjpeg = [
+    {file = "pylibjpeg-1.4.0-py3-none-any.whl", hash = "sha256:fe60abba59ef34f32f2b71f2f39c0f1cddc96e3634432407f7454ab43452f51f"},
+    {file = "pylibjpeg-1.4.0.tar.gz", hash = "sha256:b29fb655a92cc6684a49cf21cbb37482fb47698ccef901c1e6c533a06d5650ed"},
+]
+pylibjpeg-libjpeg = [
+    {file = "pylibjpeg-libjpeg-1.3.2.tar.gz", hash = "sha256:33b005229238433d9c8fc58e4909e484b680521f5db2de2006b5153724c9985c"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0de4d4f229327d1e098d47152f8e9371687e0692442c974a2c9668b9a612cdbd"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4d05ca61d4431bc9ff095e709846046f4116f9c3f1cb5ca8b1775e27bf9e5bd3"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b7974ea3676be7d5eb197deb83f0496313c3b5e1b4b57f82749694163fa74be1"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp310-cp310-win32.whl", hash = "sha256:52bb26becc9c9d171c0950c425cb83d1f4b5bb8fe4d151691d415c8621e93483"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp310-cp310-win_amd64.whl", hash = "sha256:2cb179bb3a54d5466a85ee15c3f80364952571cadd96871b81318de7d9f498ea"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:0628278aa5e3b41e430ba921fa7634913e0e76430f8f1789b3041ea1db4e9967"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:0fadae1c5d4517c62a1258469c71449ce9d0e708d0d9c5b0b3e1112dda1db6de"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:69222fe2882d6b732941b2e05fa1a03e11e7864fa95aeb8f40214026e045aa08"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp37-cp37m-win32.whl", hash = "sha256:d006108e051126f28d36f34ad610b7146c9f887347fb05a7d817bf432c9adf91"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp37-cp37m-win_amd64.whl", hash = "sha256:0794f934d7f3f645b72c3a98b2e137ac807dc9b693f6674e3513994d0bc558d3"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:9609036db4bc3a7f06fb16223d433924ecb1fdc4e55f0fef7063e3c4d7349b6c"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:898e06633d938b2d71bf0a703eed580bd89bc99c94ba0adf5b0d3bef799a17c1"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:ea1cd93ac8375490e3f4ea97168df300a28fa95ad975aada6242e96c431a955d"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d831fbfc4648a0bd41c320cd0cade61ebb2105b9caa7fce72bd7fe72f7e00a18"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp38-cp38-win32.whl", hash = "sha256:e4ff51fd8bd0144c0f266589f651ea640e17d190f9fd9878abc6c7b7774bbfd1"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp38-cp38-win_amd64.whl", hash = "sha256:0f27bd473e74bb306d5e15eed1c7689e3da9f0cf8455e33c3d4a2558a1230bc5"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:2100235163aaf38e4c682abf8aa197f34ff48b96118dd829239be1325c3297dc"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:bba012129de62d1de8740cc26cb396c522a11e4a90cd75df7296ed78c9ebc2a8"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:bc79fd5afebce8f6c6df5290b90ca25315f1ba383d6543f3a914c31954811663"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:96b71301d111d8874d2b43f67c8bb83b794ec398ebb67210d92bcc83dee56912"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp39-cp39-win32.whl", hash = "sha256:c5173be530568627307c62a9d908395afd1d04fcd1b1921187835c6dcd5d826c"},
+    {file = "pylibjpeg_libjpeg-1.3.2-cp39-cp39-win_amd64.whl", hash = "sha256:6f9d036c646fb6e8a6277ea51ee186038e05b9ba45fe066bcc09693d28bae85a"},
+]
+pylibjpeg-openjpeg = [
+    {file = "pylibjpeg-openjpeg-1.2.1.tar.gz", hash = "sha256:a43d2ab481f9dd781901cc6879d96eaaacd0eb8d7ac0e94978e58256899421ca"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:38ee7ae92c9688b11939969946011c0b96cfd3bcdb0d73e7a0e55844ce9a6509"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:fdca7d660ed125865661343de32e8c66611b78138efa52206040a1456759e44c"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:280eb85646a9e082d8e691e821c7b909d38b2c26646195d824c7bb526b88c3cc"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp310-cp310-win32.whl", hash = "sha256:f4e031d12425e4ccc64bb9c625e305a3bd86dd093229f07cfadb84f84ec18f3d"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp310-cp310-win_amd64.whl", hash = "sha256:ac4104c3159fb64f1f92d9bf9c4ce0d7d84aa8e91b035a9e196b13998c2c1162"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:4431b14f9522b7d644a712995c336b93468bed46598349a6989c8b79cfc4e277"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cf02aa161b54780d844e6bbd2132e8159c9d93cf656c63e7550d93e56a9e7fe2"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:5bafd1c60b5742eecd70e2f1ec208f70458a929bfb234ee29c44b3e1335d6aac"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp37-cp37m-win32.whl", hash = "sha256:145dfe1e55bc3e640c49da4b9043c358c6536143d770ad85f2175d7890cd4414"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp37-cp37m-win_amd64.whl", hash = "sha256:135a2efadb9e96744b9ce5a40fe178a759d540c56a7f2d895d003dc1129157f7"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:5217937b152b87c7c8b12435fbe5d397e839a16706547c4b0401f48461549473"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:5c14d66ea0e5a1dedb194e2a73e3cc8c1c68b9e3dbd8b77db40413d178cb9aca"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:197723225bf8bef459d5542e8759b43019c75149e541ccc7b4c41910040cfa7c"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:e5183d88001da865717f9dffd1b8fde10652fea4ea4a2b4bb0caa8cc3e66606a"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp38-cp38-win32.whl", hash = "sha256:31d4b384520a10967443ea1e26e91eb0a193e000f4a4dcbfe0d1981e555ab70d"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp38-cp38-win_amd64.whl", hash = "sha256:5764fdd819f747a67c3b3909b821910c3af7e5e73c61605d3ef5550758b63160"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:685a141926d3a6f1546b6fa19b627868342d500f0d5ddbe1839d54f940b1db4a"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:b213fb4c49367ae84e89c65f55f44bfb9cd841d25ec037578ae946fe75a6efd1"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f08b18c879b39fcd683429a1d895b09fd9415cc06e8c828bc13bad690a33de7f"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:f7de9df08233e0c219131f7d49278a3c0a2844e7fca85243282599da42a147ea"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp39-cp39-win32.whl", hash = "sha256:c2213d0c0b7feb4931644c413473bbce3cbdf58302019cebc92f60b4a2cecfad"},
+    {file = "pylibjpeg_openjpeg-1.2.1-cp39-cp39-win_amd64.whl", hash = "sha256:8da92c40ffe81cbc509ec5eefdf4fe83fcf44158097db7ed1a14e4f345a8a610"},
+]
+pylibjpeg-rle = [
+    {file = "pylibjpeg-rle-1.3.0.tar.gz", hash = "sha256:a819cd0afd839c5ff3bb829fcb862a8b633d9547c7a2e23ef207d763fd4d9db9"},
+    {file = "pylibjpeg_rle-1.3.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:54b8f2380a262154463d8726edf86085520022650fddcb70c00a34881d9c76a5"},
+    {file = "pylibjpeg_rle-1.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:7695786604c3803fbeb172a82700412e4e8f3fe2595e1434169c6a564afb7e70"},
+    {file = "pylibjpeg_rle-1.3.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a11a25b7685ef5c72353180a46acb7f885aa66d880719a6f01e9dd8b63ec9314"},
+    {file = "pylibjpeg_rle-1.3.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:5dc4aba0e4bb79bd2b3f326b9370d685a71f925fc2ece9a7b252bba4cc4e53fb"},
+    {file = "pylibjpeg_rle-1.3.0-cp310-cp310-win32.whl", hash = "sha256:9a5f020e565fde8e9340c625c620d88be7468bfaa53d0b469e965409f1728cfe"},
+    {file = "pylibjpeg_rle-1.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:b2e238722d63c567a0bfadc67251300d3b0c60cb27533cc2b7e198146a7f9c45"},
+    {file = "pylibjpeg_rle-1.3.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:83736cf4ba987543d02815ab7c44dc62297dca423d2120b273c9e9442451f560"},
+    {file = "pylibjpeg_rle-1.3.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e7bd1edcc7ff7ca9fa45735bed12cc503f38fad111812ef5147bb8f5904883b4"},
+    {file = "pylibjpeg_rle-1.3.0-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:c5f240cbf68d32b95f3d27633c4815608f1343acfec608653deaaf52e68a4ca5"},
+    {file = "pylibjpeg_rle-1.3.0-cp37-cp37m-win32.whl", hash = "sha256:1527fdc363ff647b2211e248e1f469e19a869db25046fec11b0c6388eb6a25ac"},
+    {file = "pylibjpeg_rle-1.3.0-cp37-cp37m-win_amd64.whl", hash = "sha256:7fadbbc711ebc797dbdfa57ca659af56d606f0bf22d3f8b253631fcb812354f9"},
+    {file = "pylibjpeg_rle-1.3.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:f58d3d88dfe11727b12cf7c86229870b550c05b4b18beaacfd01e156abe2d436"},
+    {file = "pylibjpeg_rle-1.3.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:5267b4a9095cd2c8962ac6ff6c10902e35f9057ed1e4e61dc88fb2dfdbfeacfd"},
+    {file = "pylibjpeg_rle-1.3.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3712ca118da9f73b2929197bf13c508358d83384df26fdbbca28a0a5cbce94c9"},
+    {file = "pylibjpeg_rle-1.3.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:2fbc292bf6f4ec7cb55b9aa24aae4dda8a00d474e819172c8aa34413ec7ccc26"},
+    {file = "pylibjpeg_rle-1.3.0-cp38-cp38-win32.whl", hash = "sha256:f0e0641e975f1d91b8b31644f74a4aabe6ba53536aac7e71b2ec7bd7dee80216"},
+    {file = "pylibjpeg_rle-1.3.0-cp38-cp38-win_amd64.whl", hash = "sha256:6fe00c72974ff3e071cf735cf020b379d67ddc51e7d841fe7397b43a43d2d68f"},
+    {file = "pylibjpeg_rle-1.3.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:db4d9b111e0b1410fd5ecea30e85c10a505437cd2bb40763dd41d6365df98d90"},
+    {file = "pylibjpeg_rle-1.3.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9896fdd3883affb2e83c71ef3814d6ac494dc698da80582ba93ca32236b769ba"},
+    {file = "pylibjpeg_rle-1.3.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:995da4b556bc029415729fa9b20e4207a7a55ac2343c6ae16d7743b3b606f8b8"},
+    {file = "pylibjpeg_rle-1.3.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:2983cafd097455d226172f8286fadea626631d79be9e58f69c1d3586fb8f242e"},
+    {file = "pylibjpeg_rle-1.3.0-cp39-cp39-win32.whl", hash = "sha256:32104916e315887e9a76925ae777be42cc491a88b6f2b1f3b09ce13b7b0e7063"},
+    {file = "pylibjpeg_rle-1.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:9c9158c3ffd80e68b12d5ce665498eabfe608cea8f2fd0664ec82d33a7ebcb7a"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
