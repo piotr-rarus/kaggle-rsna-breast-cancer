@@ -3,10 +3,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 from joblib import Parallel, delayed
-from pydicom import dcmread
 from tqdm.auto import tqdm
 
-from src.lib.cv import normalize_dicom
+from src.lib.cv import read_dicom_and_normalize
 
 
 def prepare_data(
