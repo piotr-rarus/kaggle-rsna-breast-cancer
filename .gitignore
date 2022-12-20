@@ -161,6 +161,8 @@ cython_debug/
 
 data/
 output/
+.vscode/
+junit/
 
 # Visual Studio Code
 .vscode

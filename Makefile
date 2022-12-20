@@ -46,3 +46,9 @@ jupyter:
 
 profile_data:
 	poetry run python -m src.cli.profile_data --data-path=data/train.csv --output-dir=output/eda
+
+prepare_data:
+	poetry run python -m src.cli.prepare_data --data-dir=data/train_images --output-dir=data/train_64 --resolution=64 --n-jobs=-1
+	poetry run python -m src.cli.prepare_data --data-dir=data/train_images --output-dir=data/train_128 --resolution=128 --n-jobs=-1
+	poetry run python -m src.cli.prepare_data --data-dir=data/train_images --output-dir=data/train_256 --resolution=256 --n-jobs=-1
+	poetry run python -m src.cli.prepare_data --data-dir=data/train_images --output-dir=data/train_512 --resolution=512 --n-jobs=-1
