@@ -57,13 +57,40 @@ class LightningDataModule(pl.LightningDataModule):
     def __init__(
         self,
         images_folder: str | Path,
-        labels_csv_path: str | Path,
+        labels_csv_path: str | Path = "data/train.csv",
         batch_size: int = 32,
         oversample_train_dataset: bool = False,
         train_val_split_id: int = 0,
         val_dataset_factor: int = 10,
-        random_state: int | None = None,
+        random_state: int = 0,
     ):
+        """Datamodule for use with PytorchLightning.
+        The training set is split into new training set and a validation set.
+        The split is stratified based on patients that have cancer.
+        The split is done like for cross validation (default 10-fold).
+        The n-th fold from "cross validation" folds can be chosen
+        using optional train_val_split_id (default 0).
+
+
+        Args:
+            images_folder (str | Path): Folder where images are stored (like
+                "data/images_64" or "data/images_512").
+            labels_csv_path (str | Path, optional): Path to csv file with
+                training metadata. Defaults to "data/train.csv".
+            batch_size (int, optional): Number of samples in a batch. Defaults to 32.
+            oversample_train_dataset (bool, optional): If True, the newly separated
+                train subset will oversample the cancer cases such that the apparent
+                number of patients with diagnosed cancer will be close to number of
+                patients without cancer. Defaults to False.
+            train_val_split_id (int, optional): The train-val split is done in k-fold
+                manner. The train_val_split_id allows to choose different folds.
+                Defaults to 0.
+            val_dataset_factor (int, optional): The train-val split is done in k-fold
+                manner. The val_dataset_factor changes the size of K used in k-fold
+                split. Defaults to 10.
+            random_state (int, optional): random_state (seed) used only for shuffling
+                the samples in newly separated train subset. Defaults to 0.
+        """
         assert 0 <= train_val_split_id and train_val_split_id < val_dataset_factor
         super().__init__()
         self.batch_size = batch_size
