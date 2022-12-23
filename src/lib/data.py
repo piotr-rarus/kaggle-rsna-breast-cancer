@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, Dataset, Subset
 from src.lib.cv import read_dicom_and_normalize
 
 
-class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
+class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     def __init__(self, labels_csv_path: str | Path, images_folder: str | Path) -> None:
         """Dataset of breast cancer samples from RSNA Kaggle challenge.
         challenge link: https://www.kaggle.com/competitions/rsna-breast-cancer-detection
@@ -33,15 +33,15 @@ class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
         self.metadata = pd.read_csv(labels_csv_path)
         self.images_folder = Path(images_folder)
         self.labels = (
-            np.zeros(len(self.metadata), dtype=int)
+            torch.zeros(len(self.metadata)).int()
             if "cancer" not in self.metadata.columns
-            else self.metadata.cancer.to_numpy()
+            else torch.from_numpy(self.metadata.cancer.to_numpy())
         )
 
     def __len__(self) -> int:
         return len(self.metadata)
 
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         impath: Path = next(
             self.images_folder.rglob(f"{self.metadata.image_id[index]}.*")
         )

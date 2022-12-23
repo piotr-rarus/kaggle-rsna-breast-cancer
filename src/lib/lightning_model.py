@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torchmetrics
 
+from src.lib.metrics import pF1Beta
+
 
 class LightningBase(pl.LightningModule):
     num_classes: int
@@ -76,7 +78,7 @@ class LightningBase(pl.LightningModule):
         x, y = batch
         logits = self.backbone(x)
         preds = logits.softmax(dim=1)
-        loss = self.supervised_criterion(logits, y)
+        loss = self.supervised_criterion(preds, y)
         for metric_name, metric in self.metrics.items():
             metric.update(preds, y)
         return {
@@ -118,7 +120,7 @@ class LightningCLF(LightningBase):
         self.backbone = backbone
 
         # Defining loss
-        self.supervised_criterion = nn.CrossEntropyLoss()
+        self.supervised_criterion = pF1Beta()
 
         # Metrics
         self.num_classes = num_classes
@@ -144,10 +146,10 @@ class LightningCLF(LightningBase):
     ) -> dict[str, torch.Tensor]:
         inputs, labels = train_batch
         logits = self.backbone(inputs)
-        # preds = logits.detach().softmax(dim=1)
+        preds = logits.softmax(dim=1)
 
         # Loss
-        loss = self.supervised_criterion(logits, labels)
+        loss = self.supervised_criterion(preds, labels)
         self.log("train_batch/loss", loss)
         return {
             "loss": loss,
