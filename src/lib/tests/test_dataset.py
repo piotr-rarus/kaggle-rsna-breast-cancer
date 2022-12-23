@@ -26,7 +26,7 @@ def test_png_train_dataset(
     assert len(mock_train_dataset) == 13
     image, target = mock_train_dataset[0]
     assert target == 0
-    assert image.shape == (64, 58)
+    assert image.shape == (1, 64, 58)
     assert image.dtype == torch.float
     assert torch.allclose(image.mean(), torch.tensor(16.3004), atol=1e-3)
     assert torch.allclose(image.std(), torch.tensor(45.7319), atol=1e-3)
