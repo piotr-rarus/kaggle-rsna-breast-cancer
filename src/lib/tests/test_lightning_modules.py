@@ -1,61 +1,41 @@
-from pathlib import Path
-
 import pytorch_lightning as pl
 import torch
 
 from src.backbone_models.dummy import DummyModel
-from src.lib.data import LightningDataModule
-from src.lib.lightning_model import LightningCLF
+from src.nn.data import LightningDataModule
+from src.nn.lightning_model import LightningCLF
 
 
-def test_dataloader(mock_dicoms_folderpath: Path, mock_train_csv_path: Path) -> None:
+def test_dataloader(mock_lightning_data_module: LightningDataModule) -> None:
     # reading dicoms
     # no labels case (no "cancer" column in .csv)
-    dm = LightningDataModule(
-        batch_size=1,
-        random_state=0,
-        val_dataset_factor=2,
-        labels_csv_path=mock_train_csv_path,
-        images_folder=mock_dicoms_folderpath,
-        oversample_train_dataset=False,
-    )
-    train_loader = dm.train_dataloader()
-    val_loader = dm.val_dataloader()
+    train_loader = mock_lightning_data_module.train_dataloader()
+    val_loader = mock_lightning_data_module.val_dataloader()
     assert len(train_loader) == 5
     assert len(val_loader) == 8
     first_batch = next(iter(train_loader))
     assert torch.allclose(first_batch[0][0].mean(), torch.tensor(16.3004), atol=1e-3)
 
+
+def test_dataloader_with_oversampling(
+    mock_lightning_data_module_with_oversampling: LightningDataModule,
+) -> None:
     # with oversampling
-    dm = LightningDataModule(
-        batch_size=1,
-        random_state=0,
-        val_dataset_factor=2,
-        labels_csv_path=mock_train_csv_path,
-        images_folder=mock_dicoms_folderpath,
-        oversample_train_dataset=True,
-    )
-    train_loader = dm.train_dataloader()
-    val_loader = dm.val_dataloader()
+    train_loader = mock_lightning_data_module_with_oversampling.train_dataloader()
+    val_loader = mock_lightning_data_module_with_oversampling.val_dataloader()
     assert len(train_loader) == 6
     assert len(val_loader) == 8
     first_batch = next(iter(train_loader))
     assert torch.allclose(first_batch[0][0].mean(), torch.tensor(16.3004), atol=1e-3)
 
 
-def test_pl_model(mock_dicoms_folderpath: Path, mock_train_csv_path: Path) -> None:
-    dm = LightningDataModule(
-        batch_size=2,
-        random_state=0,
-        val_dataset_factor=2,
-        labels_csv_path=mock_train_csv_path,
-        images_folder=mock_dicoms_folderpath,
-        oversample_train_dataset=True,
-    )
+def test_pytorch_lightning_model(
+    mock_lightning_data_module_with_oversampling: LightningDataModule,
+) -> None:
     trainer = pl.Trainer(
         max_epochs=3,
         logger=False,
         enable_checkpointing=False,
     )
     model = LightningCLF(backbone=DummyModel(), num_classes=2)
-    trainer.fit(model, datamodule=dm)
+    trainer.fit(model, datamodule=mock_lightning_data_module_with_oversampling)

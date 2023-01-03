@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import torch
 
 from src.nn.data import RSNABreastCancerTestDataset, RSNABreastCancerTrainDataset
@@ -12,7 +10,7 @@ def test_dicom_test_dataset(
     # no labels case (no "cancer" column in .csv)
     assert len(mock_test_dataset) == 1
     image = mock_test_dataset[0]
-    assert image.shape == (2776, 2082)
+    assert image.shape == (1, 2776, 2082)
     assert image.dtype == torch.float
     assert torch.allclose(image.mean(), torch.tensor(7.7473), atol=1e-3)
     assert torch.allclose(image.std(), torch.tensor(25.9267), atol=1e-3)

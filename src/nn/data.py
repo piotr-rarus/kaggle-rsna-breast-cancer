@@ -3,10 +3,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
 import torch
 from numpy.typing import NDArray
 from pydicom import dcmread
-from torch.utils.data import Dataset
+from sklearn.model_selection import StratifiedKFold  # type: ignore
+from torch.utils.data import DataLoader, Dataset, Subset
 
 from src.lib.cv import normalize_dicom
 
@@ -21,10 +23,10 @@ def _get_tensor_image(image_dir: Path, patient_id: int, image_id: int) -> torch.
     else:
         numpy_image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
 
-    return torch.tensor(numpy_image, dtype=torch.float)
+    return torch.tensor(numpy_image, dtype=torch.float).unsqueeze(0)
 
 
-class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, int]]):
+class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     def __init__(self, labels_csv_path: Path, images_folder: Path) -> None:
         """Dataset of breast cancer samples from RSNA Kaggle challenge.
         challenge link: https://www.kaggle.com/competitions/rsna-breast-cancer-detection
@@ -33,7 +35,7 @@ class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, int]]):
         For train dataset, a tuple of image, target is returned. For test dataset,
         a dummy label `0` is returned next to the test image. The returned image
         is a single channel float tensor, i.e. expect the image.shape to be a tuple like
-        (320, 180), not (320, 180 , 3). The pixel values are rescaled to 0-255 range.
+        (1, 320, 180), not (3, 320, 180). The pixel values are rescaled to 0-255 range.
         The dicom images provided by contest organizers have more than 256 possible
         pixel values, thus if images_folder contains dicom (.dcm) files, expect
         fractional pixel values.
@@ -53,12 +55,12 @@ class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, int]]):
     def __len__(self) -> int:
         return len(self.metadata)
 
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         return _get_tensor_image(
             self.images_folder,
             self.metadata.patient_id[index],
             self.metadata.image_id[index],
-        ), int(self.metadata.cancer[index])
+        ), torch.tensor(self.metadata.cancer[index], dtype=torch.int)
 
 
 class RSNABreastCancerTestDataset(Dataset[torch.Tensor]):
@@ -96,3 +98,92 @@ class RSNABreastCancerTestDataset(Dataset[torch.Tensor]):
             self.metadata.patient_id[index],
             self.metadata.image_id[index],
         )
+
+
+class LightningDataModule(pl.LightningDataModule):
+    def __init__(
+        self,
+        images_folder: Path,
+        labels_csv_path: Path = Path("data/train.csv"),
+        batch_size: int = 32,
+        oversample_train_dataset: bool = False,
+        train_val_split_id: int = 0,
+        val_dataset_factor: int = 10,
+        random_state: int = 0,
+    ):
+        """Datamodule for use with PytorchLightning.
+        The training set is split into new training set and a validation set.
+        The split is stratified based on patients that have cancer.
+        The split is done like for cross validation (default 10-fold).
+        The n-th fold from "cross validation" folds can be chosen
+        using optional train_val_split_id (default 0).
+
+
+        Args:
+            images_folder (Path): Folder where images are stored (like
+                "data/images_64" or "data/images_512").
+            labels_csv_path (Path, optional): Path to csv file with
+                training metadata. Defaults to "data/train.csv".
+            batch_size (int, optional): Number of samples in a batch. Defaults to 32.
+            oversample_train_dataset (bool, optional): If True, the newly separated
+                train subset will oversample the cancer cases such that the apparent
+                number of patients with diagnosed cancer will be close to number of
+                patients without cancer. Defaults to False.
+            train_val_split_id (int, optional): The train-val split is done in k-fold
+                manner. The train_val_split_id allows to choose different folds.
+                Defaults to 0.
+            val_dataset_factor (int, optional): The train-val split is done in k-fold
+                manner. The val_dataset_factor changes the size of K used in k-fold
+                split. Defaults to 10.
+            random_state (int, optional): random_state (seed) used only for shuffling
+                the samples in newly separated train subset. Defaults to 0.
+        """
+        assert 0 <= train_val_split_id and train_val_split_id < val_dataset_factor
+        super().__init__()
+        self.batch_size = batch_size
+        # instead of stratified train_test_split, we use stratified KFold
+        # this way we may make a cross-validation if we'd like to
+        full_train_dataset = RSNABreastCancerTrainDataset(
+            labels_csv_path=labels_csv_path,
+            images_folder=images_folder,
+        )
+
+        # we can't just split indexes, we should split by patients:
+        patients_to_stratify = full_train_dataset.metadata.groupby(by="patient_id")[
+            ["cancer"]
+        ].max()  # a dataframe: index: "patient_id"; columns: ["cancer"]
+        skf = StratifiedKFold(n_splits=val_dataset_factor)
+        train_patients_idxs, val_patients_idxs = list(
+            skf.split(patients_to_stratify, patients_to_stratify.cancer)
+        )[train_val_split_id]
+        train_patients = patients_to_stratify.iloc[train_patients_idxs]
+        val_patients = patients_to_stratify.iloc[val_patients_idxs]
+        train_idxs = full_train_dataset.metadata[
+            full_train_dataset.metadata.patient_id.isin(train_patients.index)
+        ].index.to_numpy()
+        val_idxs = full_train_dataset.metadata[
+            full_train_dataset.metadata.patient_id.isin(val_patients.index)
+        ].index.to_numpy()
+
+        if oversample_train_dataset:
+            patients_to_oversample = train_patients[
+                train_patients.cancer == 1
+            ].index.to_numpy()
+            oversample_multiplier = (
+                len(train_patients) // len(patients_to_oversample) - 1
+            )  # will raise value error if there are no patients with cancer
+            train_idxs_to_oversample = full_train_dataset.metadata[
+                full_train_dataset.metadata.patient_id.isin(patients_to_oversample)
+            ].index.to_numpy()
+            train_idxs = np.concatenate(
+                [train_idxs] + [train_idxs_to_oversample] * oversample_multiplier
+            )
+        np.random.default_rng(seed=random_state).shuffle(train_idxs)
+        self.train_dataset = Subset(full_train_dataset, train_idxs)
+        self.val_dataset = Subset(full_train_dataset, val_idxs)
+
+    def train_dataloader(self) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
+        return DataLoader(self.train_dataset, batch_size=self.batch_size)
+
+    def val_dataloader(self) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
+        return DataLoader(self.val_dataset, batch_size=self.batch_size)
