@@ -2,7 +2,7 @@ from pathlib import Path
 
 import torch
 
-from src.lib.data import RSNABreastCancerDataset
+from src.nn.data import RSNABreastCancerDataset
 
 
 def test_dataset(

@@ -3,13 +3,14 @@ from pathlib import Path
 import cv2
 import pandas as pd
 import torch
+from pydicom import dcmread
 from torch.utils.data import Dataset
 
-from src.lib.cv import read_dicom_and_normalize
+from src.lib.cv import normalize_dicom
 
 
 class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
-    def __init__(self, labels_csv_path: str | Path, images_folder: str | Path) -> None:
+    def __init__(self, labels_csv_path: Path, images_folder: Path) -> None:
         """Dataset of breast cancer samples from RSNA Kaggle challenge.
         challenge link: https://www.kaggle.com/competitions/rsna-breast-cancer-detection
         This dataset operates on either dicom (.dcm) or cv2.imread compatible extensions
@@ -22,9 +23,12 @@ class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
         pixel values, thus if images_folder contains dicom (.dcm) files, expect
         fractional pixel values.
 
-        Args:
-            labels_csv_path (Path): path to csv file with samples metadata
-            images_folder (Path): folder where the images are stored (dcm/png/jpeg)
+        Parameters
+        ----------
+        labels_csv_path : Path
+            path to csv file with samples metadata
+        images_folder : Path
+            folder where the images are stored (dcm/png/jpeg)
         """
         super().__init__()
         self.metadata = pd.read_csv(labels_csv_path)
@@ -38,11 +42,11 @@ class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
             self.images_folder.rglob(f"{self.metadata.image_id[index]}.*")
         )
         if impath.suffix == ".dcm":
-            numpy_image = read_dicom_and_normalize(impath)
+            numpy_image = 255 * normalize_dicom(dcmread(impath))
         else:
             numpy_image = cv2.imread(str(impath), cv2.IMREAD_GRAYSCALE)
         image = torch.tensor(numpy_image, dtype=torch.float)
         if "cancer" not in self.metadata.columns:
-            # test dataset
+            # for test dataset, the "cancer" column is not present
             return image, 0
         return image, int(self.metadata.cancer[index])

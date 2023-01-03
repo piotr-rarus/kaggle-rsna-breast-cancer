@@ -3,9 +3,10 @@ from pathlib import Path
 import cv2
 import numpy as np
 from joblib import Parallel, delayed
+from pydicom import dcmread
 from tqdm.auto import tqdm
 
-from src.lib.cv import read_dicom_and_normalize
+from src.lib.cv import normalize_dicom
 
 
 def prepare_data(
@@ -21,7 +22,8 @@ def prepare_data(
 
 
 def __prepare_dicom(dicom_path: Path, output_dir: Path, resolution: int) -> None:
-    image = read_dicom_and_normalize(dicom_path)
+    dicom = dcmread(dicom_path)
+    image = normalize_dicom(dicom)
     image = image.astype(np.uint8)
 
     height, width = image.shape[0], image.shape[1]

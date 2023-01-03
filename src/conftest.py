@@ -4,7 +4,7 @@ import pandas as pd
 from pydicom import FileDataset, dcmread
 from pytest import fixture
 
-MOCK_DICOM_FILEPATH = Path("src/tests/example_dicoms/200779059.dcm")
+MOCK_DICOM_FILEPATH = Path("src/tests/mock_dicoms/200779059.dcm")
 MOCK_TRAIN_DATA_FILEPATH = Path("src/tests/mock_train_data.csv")
 MOCK_TEST_DATA_FILEPATH = Path("src/tests/mock_test_data.csv")
 
