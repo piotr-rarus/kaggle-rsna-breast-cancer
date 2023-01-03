@@ -14,8 +14,7 @@ def test_dataset(
         labels_csv_path=mock_test_csv_path, images_folder=mock_dicoms_folderpath
     )
     assert len(dicom_dataset) == 1
-    image, dummy_label_for_test_dataset = dicom_dataset[0]
-    assert dummy_label_for_test_dataset == 0
+    image = dicom_dataset[0]
     assert image.shape == (2776, 2082)
     assert image.dtype == torch.float
     assert torch.allclose(image.mean(), torch.tensor(7.7473), atol=1e-3)

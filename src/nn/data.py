@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from src.lib.cv import normalize_dicom
 
 
-class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
+class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int] | torch.Tensor]):
     def __init__(self, labels_csv_path: Path, images_folder: Path) -> None:
         """Dataset of breast cancer samples from RSNA Kaggle challenge.
         challenge link: https://www.kaggle.com/competitions/rsna-breast-cancer-detection
@@ -37,7 +37,7 @@ class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
     def __len__(self) -> int:
         return len(self.metadata)
 
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, int] | torch.Tensor:
         impath: Path = next(
             self.images_folder.rglob(f"{self.metadata.image_id[index]}.*")
         )
@@ -48,5 +48,5 @@ class RSNABreastCancerDataset(Dataset[tuple[torch.Tensor, int]]):
         image = torch.tensor(numpy_image, dtype=torch.float)
         if "cancer" not in self.metadata.columns:
             # for test dataset, the "cancer" column is not present
-            return image, 0
+            return image
         return image, int(self.metadata.cancer[index])
