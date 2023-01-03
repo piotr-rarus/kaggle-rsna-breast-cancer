@@ -24,7 +24,6 @@ def prepare_data(
 def __prepare_dicom(dicom_path: Path, output_dir: Path, resolution: int) -> None:
     dicom = dcmread(dicom_path)
     image = normalize_dicom(dicom)
-    image *= 255
     image = image.astype(np.uint8)
 
     height, width = image.shape[0], image.shape[1]
