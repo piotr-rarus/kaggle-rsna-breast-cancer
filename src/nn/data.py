@@ -27,7 +27,7 @@ def _get_tensor_image(image_dir: Path, patient_id: int, image_id: int) -> torch.
 
 
 class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
-    def __init__(self, labels_csv_path: Path, images_folder: Path) -> None:
+    def __init__(self, metadata_csv_path: Path, images_dir: Path) -> None:
         """Dataset of breast cancer samples from RSNA Kaggle challenge.
         challenge link: https://www.kaggle.com/competitions/rsna-breast-cancer-detection
         This dataset operates on either dicom (.dcm) or cv2.imread compatible extensions
@@ -42,14 +42,14 @@ class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
 
         Parameters
         ----------
-        labels_csv_path : Path
+        metadata_csv_path : Path
             path to csv file with samples metadata
-        images_folder : Path
+        images_dir : Path
             folder where the images are stored (dcm/png/jpeg)
         """
         super().__init__()
-        self.metadata = pd.read_csv(labels_csv_path)
-        self.images_folder = Path(images_folder)
+        self.metadata = pd.read_csv(metadata_csv_path)
+        self.images_dir = Path(images_dir)
         assert "cancer" in self.metadata.columns
 
     def __len__(self) -> int:
@@ -57,14 +57,14 @@ class RSNABreastCancerTrainDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         return _get_tensor_image(
-            self.images_folder,
+            self.images_dir,
             self.metadata.patient_id[index],
             self.metadata.image_id[index],
         ), torch.tensor(self.metadata.cancer[index], dtype=torch.int)
 
 
 class RSNABreastCancerTestDataset(Dataset[torch.Tensor]):
-    def __init__(self, labels_csv_path: Path, images_folder: Path) -> None:
+    def __init__(self, metadata_csv_path: Path, images_dir: Path) -> None:
         """Dataset of breast cancer samples from RSNA Kaggle challenge.
         challenge link: https://www.kaggle.com/competitions/rsna-breast-cancer-detection
         This dataset operates on either dicom (.dcm) or cv2.imread compatible extensions
@@ -79,14 +79,14 @@ class RSNABreastCancerTestDataset(Dataset[torch.Tensor]):
 
         Parameters
         ----------
-        labels_csv_path : Path
+        metadata_csv_path : Path
             path to csv file with samples metadata
-        images_folder : Path
+        images_dir : Path
             folder where the images are stored (dcm/png/jpeg)
         """
         super().__init__()
-        self.metadata = pd.read_csv(labels_csv_path)
-        self.images_folder = Path(images_folder)
+        self.metadata = pd.read_csv(metadata_csv_path)
+        self.images_dir = Path(images_dir)
         assert "cancer" not in self.metadata.columns
 
     def __len__(self) -> int:
@@ -94,7 +94,7 @@ class RSNABreastCancerTestDataset(Dataset[torch.Tensor]):
 
     def __getitem__(self, index: int) -> torch.Tensor:
         return _get_tensor_image(
-            self.images_folder,
+            self.images_dir,
             self.metadata.patient_id[index],
             self.metadata.image_id[index],
         )
@@ -103,8 +103,8 @@ class RSNABreastCancerTestDataset(Dataset[torch.Tensor]):
 class LightningDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        images_folder: Path,
-        labels_csv_path: Path = Path("data/train.csv"),
+        images_dir: Path,
+        metadata_csv_path: Path,
         batch_size: int = 32,
         oversample_train_dataset: bool = False,
         train_val_split_id: int = 0,
@@ -118,34 +118,37 @@ class LightningDataModule(pl.LightningDataModule):
         The n-th fold from "cross validation" folds can be chosen
         using optional train_val_split_id (default 0).
 
-
-        Args:
-            images_folder (Path): Folder where images are stored (like
-                "data/images_64" or "data/images_512").
-            labels_csv_path (Path, optional): Path to csv file with
-                training metadata. Defaults to "data/train.csv".
-            batch_size (int, optional): Number of samples in a batch. Defaults to 32.
-            oversample_train_dataset (bool, optional): If True, the newly separated
-                train subset will oversample the cancer cases such that the apparent
-                number of patients with diagnosed cancer will be close to number of
-                patients without cancer. Defaults to False.
-            train_val_split_id (int, optional): The train-val split is done in k-fold
-                manner. The train_val_split_id allows to choose different folds.
-                Defaults to 0.
-            val_dataset_factor (int, optional): The train-val split is done in k-fold
-                manner. The val_dataset_factor changes the size of K used in k-fold
-                split. Defaults to 10.
-            random_state (int, optional): random_state (seed) used only for shuffling
-                the samples in newly separated train subset. Defaults to 0.
+        Parameters
+        ----------
+        images_dir : Path
+            Folder where images are stored (like "data/images_64" or "data/images_512").
+        metadata_csv_path : Path
+            Path to csv file with training metadata. Defaults to "data/train.csv".
+        batch_size : int, optional
+            Number of samples in a batch, by default 32
+        oversample_train_dataset : bool, optional
+            If True, the newly separated train subset will oversample the cancer cases
+            such that the apparent number of patients with diagnosed cancer will be
+            close to number of patients without cancer, by default False
+        train_val_split_id : int, optional
+            The train-val split is done in k-fold manner. The train_val_split_id allows
+            to choose different folds, by default 0
+        val_dataset_factor : int, optional
+            The train-val split is done in k-fold manner. The val_dataset_factor
+            changes the size of K used in k-fold split, by default 10
+        random_state : int, optional
+            (seed) used only for shuffling the samples in newly separated train subset,
+            by default 0
         """
+
         assert 0 <= train_val_split_id and train_val_split_id < val_dataset_factor
         super().__init__()
         self.batch_size = batch_size
         # instead of stratified train_test_split, we use stratified KFold
         # this way we may make a cross-validation if we'd like to
         full_train_dataset = RSNABreastCancerTrainDataset(
-            labels_csv_path=labels_csv_path,
-            images_folder=images_folder,
+            images_dir=images_dir,
+            metadata_csv_path=metadata_csv_path,
         )
 
         # we can't just split indexes, we should split by patients:

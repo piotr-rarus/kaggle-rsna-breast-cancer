@@ -1,9 +1,9 @@
 import pytorch_lightning as pl
 import torch
 
-from src.backbone_models.dummy import DummyModel
 from src.nn.data import LightningDataModule
-from src.nn.lightning_model import LightningCLF
+from src.nn.lightning_model import LightningClassifier
+from src.nn.models.dummy import DummyModel
 
 
 def test_dataloader(mock_lightning_data_module: LightningDataModule) -> None:
@@ -37,5 +37,5 @@ def test_pytorch_lightning_model(
         logger=False,
         enable_checkpointing=False,
     )
-    model = LightningCLF(backbone=DummyModel(), num_classes=2)
+    model = LightningClassifier(backbone=DummyModel(), num_classes=2)
     trainer.fit(model, datamodule=mock_lightning_data_module_with_oversampling)
