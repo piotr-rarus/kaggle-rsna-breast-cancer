@@ -5,9 +5,10 @@ import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 import torch
+from imblearn.over_sampling import RandomOverSampler
 from numpy.typing import NDArray
 from pydicom import dcmread
-from sklearn.model_selection import StratifiedKFold  # type: ignore
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset, Subset
 
 from src.lib.cv import normalize_dicom
@@ -107,83 +108,74 @@ class LightningDataModule(pl.LightningDataModule):
         metadata_csv_path: Path,
         batch_size: int = 32,
         oversample_train_dataset: bool = False,
-        train_val_split_id: int = 0,
-        val_dataset_factor: int = 10,
-        random_state: int = 0,
+        val_split_size_factor: float = 0.1,
+        split_random_state: int = 0,
+        resampling_random_state: int = 0,
     ):
-        """Datamodule for use with PytorchLightning.
-        The training set is split into new training set and a validation set.
-        The split is stratified based on patients that have cancer.
-        The split is done like for cross validation (default 10-fold).
-        The n-th fold from "cross validation" folds can be chosen
-        using optional train_val_split_id (default 0).
-
-        Parameters
-        ----------
-        images_dir : Path
-            Folder where images are stored (like "data/images_64" or "data/images_512").
-        metadata_csv_path : Path
-            Path to csv file with training metadata. Defaults to "data/train.csv".
-        batch_size : int, optional
-            Number of samples in a batch, by default 32
-        oversample_train_dataset : bool, optional
-            If True, the newly separated train subset will oversample the cancer cases
-            such that the apparent number of patients with diagnosed cancer will be
-            close to number of patients without cancer, by default False
-        train_val_split_id : int, optional
-            The train-val split is done in k-fold manner. The train_val_split_id allows
-            to choose different folds, by default 0
-        val_dataset_factor : int, optional
-            The train-val split is done in k-fold manner. The val_dataset_factor
-            changes the size of K used in k-fold split, by default 10
-        random_state : int, optional
-            (seed) used only for shuffling the samples in newly separated train subset,
-            by default 0
-        """
-
-        assert 0 <= train_val_split_id and train_val_split_id < val_dataset_factor
         super().__init__()
+
+        assert 0 <= val_split_size_factor < 1
         self.batch_size = batch_size
-        # instead of stratified train_test_split, we use stratified KFold
-        # this way we may make a cross-validation if we'd like to
-        full_train_dataset = RSNABreastCancerTrainDataset(
+        self.oversample_train_dataset = oversample_train_dataset
+        self.val_split_size_factor = val_split_size_factor
+        self.split_random_state = split_random_state
+        self.resampling_random_state = resampling_random_state
+
+        self.dataset = RSNABreastCancerTrainDataset(
             images_dir=images_dir,
             metadata_csv_path=metadata_csv_path,
         )
 
+        train_idx, val_idx = self.__get_train_val_splits(
+            dataset=self.dataset,
+            val_split_size_factor=self.val_split_size_factor,
+            split_random_state=self.split_random_state,
+            oversample_train_dataset=self.oversample_train_dataset,
+            resampling_random_state=self.resampling_random_state,
+        )
+        self.train_dataset = Subset(self.dataset, train_idx)
+        self.val_dataset = Subset(self.dataset, val_idx)
+
+    def __get_train_val_splits(
+        self,
+        dataset: RSNABreastCancerTrainDataset,
+        val_split_size_factor: float,
+        split_random_state: int,
+        oversample_train_dataset: bool,
+        resampling_random_state: int,
+    ) -> tuple[list[int], list[int]]:
         # we can't just split indexes, we should split by patients:
-        patients_to_stratify = full_train_dataset.metadata.groupby(by="patient_id")[
+        patients_to_stratify = dataset.metadata.groupby(by="patient_id")[
             ["cancer"]
         ].max()  # a dataframe: index: "patient_id"; columns: ["cancer"]
-        skf = StratifiedKFold(n_splits=val_dataset_factor)
-        train_patients_idxs, val_patients_idxs = list(
-            skf.split(patients_to_stratify, patients_to_stratify.cancer)
-        )[train_val_split_id]
-        train_patients = patients_to_stratify.iloc[train_patients_idxs]
-        val_patients = patients_to_stratify.iloc[val_patients_idxs]
-        train_idxs = full_train_dataset.metadata[
-            full_train_dataset.metadata.patient_id.isin(train_patients.index)
+
+        train_patients_idx, val_patients_idx = train_test_split(
+            patients_to_stratify.index,
+            test_size=val_split_size_factor,
+            random_state=split_random_state,
+            stratify=patients_to_stratify.cancer,
+            shuffle=True,
+        )
+
+        train_idx = dataset.metadata[
+            dataset.metadata.patient_id.isin(train_patients_idx)
         ].index.to_numpy()
-        val_idxs = full_train_dataset.metadata[
-            full_train_dataset.metadata.patient_id.isin(val_patients.index)
+
+        val_idx = dataset.metadata[
+            dataset.metadata.patient_id.isin(val_patients_idx)
         ].index.to_numpy()
 
         if oversample_train_dataset:
-            patients_to_oversample = train_patients[
-                train_patients.cancer == 1
-            ].index.to_numpy()
-            oversample_multiplier = (
-                len(train_patients) // len(patients_to_oversample) - 1
-            )  # will raise value error if there are no patients with cancer
-            train_idxs_to_oversample = full_train_dataset.metadata[
-                full_train_dataset.metadata.patient_id.isin(patients_to_oversample)
-            ].index.to_numpy()
-            train_idxs = np.concatenate(
-                [train_idxs] + [train_idxs_to_oversample] * oversample_multiplier
+            random_over_sampler = RandomOverSampler(
+                random_state=resampling_random_state
             )
-        np.random.default_rng(seed=random_state).shuffle(train_idxs)
-        self.train_dataset = Subset(full_train_dataset, train_idxs)
-        self.val_dataset = Subset(full_train_dataset, val_idxs)
+            train_idx, _ = random_over_sampler.fit_resample(
+                train_idx.reshape(-1, 1),
+                dataset.metadata.iloc[train_idx].cancer,
+            )
+            train_idx = train_idx.squeeze()
+
+        return train_idx.tolist(), val_idx.tolist()
 
     def train_dataloader(self) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
         return DataLoader(self.train_dataset, batch_size=self.batch_size)

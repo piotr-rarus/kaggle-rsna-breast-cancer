@@ -45,22 +45,22 @@ def mock_test_dataset() -> RSNABreastCancerTestDataset:
 @fixture(scope="session")
 def mock_lightning_data_module() -> LightningDataModule:
     return LightningDataModule(
-        batch_size=1,
-        random_state=0,
-        val_dataset_factor=2,
-        metadata_csv_path=MOCK_TRAIN_METADATA_FILEPATH,
         images_dir=MOCK_DICOMS_DIR,
+        metadata_csv_path=MOCK_TRAIN_METADATA_FILEPATH,
+        batch_size=1,
         oversample_train_dataset=False,
+        val_split_size_factor=0.5,
+        split_random_state=0,
     )
 
 
 @fixture(scope="session")
 def mock_lightning_data_module_with_oversampling() -> LightningDataModule:
     return LightningDataModule(
-        batch_size=1,
-        random_state=0,
-        val_dataset_factor=2,
-        metadata_csv_path=MOCK_TRAIN_METADATA_FILEPATH,
         images_dir=MOCK_DICOMS_DIR,
+        metadata_csv_path=MOCK_TRAIN_METADATA_FILEPATH,
+        batch_size=1,
         oversample_train_dataset=True,
+        val_split_size_factor=0.5,
+        split_random_state=0,
     )
