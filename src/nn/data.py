@@ -111,6 +111,7 @@ class LightningDataModule(pl.LightningDataModule):
         val_split_size_factor: float = 0.1,
         split_random_state: int = 0,
         resampling_random_state: int = 0,
+        num_workers: int = 0,
     ):
         super().__init__()
 
@@ -120,6 +121,7 @@ class LightningDataModule(pl.LightningDataModule):
         self.val_split_size_factor = val_split_size_factor
         self.split_random_state = split_random_state
         self.resampling_random_state = resampling_random_state
+        self.num_workers = num_workers
 
         self.dataset = RSNABreastCancerTrainDataset(
             images_dir=images_dir,
@@ -178,7 +180,11 @@ class LightningDataModule(pl.LightningDataModule):
         return train_idx.tolist(), val_idx.tolist()
 
     def train_dataloader(self) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
-        return DataLoader(self.train_dataset, batch_size=self.batch_size)
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers
+        )
 
     def val_dataloader(self) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
-        return DataLoader(self.val_dataset, batch_size=self.batch_size)
+        return DataLoader(
+            self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers
+        )

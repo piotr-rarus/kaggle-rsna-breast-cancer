@@ -5,7 +5,7 @@ from src.nn.data import LightningDataModule
 from src.nn.models.dummy import DummyModel
 
 
-def test_pytorch_lightning_model(
+def test_lightning_classifier(
     mock_lightning_data_module_with_oversampling: LightningDataModule,
 ) -> None:
     trainer = pl.Trainer(

@@ -22,25 +22,42 @@ class LightningClassifier(pl.LightningModule):
         self.supervised_criterion = supervised_criterion
         self.lr = lr
         self.save_hyperparameters("lr")  # type: ignore
-        self.metrics: dict[str, Any]
-        self.init_metrics()
+        self.metrics: dict[str, dict[str, Any]]
+        self.init_metrics(self.num_classes)
 
-    def init_metrics(self) -> None:
+    def init_metrics(self, num_classes: int) -> None:
         self.metrics = {
+            "train": self.__get_split_metrics(num_classes=num_classes),
+            "val": self.__get_split_metrics(num_classes=num_classes),
+            "test": self.__get_split_metrics(num_classes=num_classes),
+        }
+
+        for split_name in self.metrics:
+            for metric_name, metric in self.metrics[split_name].items():
+                self.add_module(f"metrics/{split_name}/{metric_name}", metric)
+
+    def __get_split_metrics(self, num_classes: int) -> dict[str, Any]:
+        split_metrics = {
             "accuracy": torchmetrics.Accuracy(
-                task="multiclass", num_classes=self.num_classes, average="macro"
+                task="multiclass", num_classes=num_classes, average="macro"
+            ),
+            "precision": torchmetrics.Precision(
+                task="multiclass", num_classes=num_classes, average="macro"
+            ),
+            "recall": torchmetrics.Recall(
+                task="multiclass", num_classes=num_classes, average="macro"
             ),
             "f1-score": torchmetrics.F1Score(
-                task="multiclass", num_classes=self.num_classes, average="macro"
+                task="multiclass", num_classes=num_classes, average="macro"
             ),
         }
-        if self.num_classes > 5:
-            self.metrics["top5-accuracy"] = torchmetrics.Accuracy(
-                task="multiclass", num_classes=self.num_classes, top_k=5
+
+        if num_classes > 5:
+            split_metrics["top5-accuracy"] = torchmetrics.Accuracy(
+                task="multiclass", num_classes=num_classes, top_k=5
             )
 
-        for metric_name, metric in self.metrics.items():
-            self.add_module(f"metrics_{metric_name}", metric)
+        return split_metrics
 
     def configure_optimizers(self) -> dict[str, Any]:
         optimizer = torch.optim.SGD(self.backbone.parameters(), lr=self.lr)
@@ -62,17 +79,9 @@ class LightningClassifier(pl.LightningModule):
         return out
 
     def training_step(
-        self, train_batch: torch.Tensor, batch_idx: int
+        self, batch: torch.Tensor, batch_idx: int
     ) -> dict[str, torch.Tensor]:
-        inputs, labels = train_batch
-        logits = self.backbone(inputs)
-        preds = logits.softmax(dim=1)
-
-        loss = self.supervised_criterion(preds, labels)
-        self.log("train_batch/loss", loss)
-        return {
-            "loss": loss,
-        }
+        return self._shared_eval(batch, batch_idx, "train")
 
     def validation_step(
         self, batch: torch.Tensor, batch_idx: int
@@ -81,6 +90,13 @@ class LightningClassifier(pl.LightningModule):
 
     def test_step(self, batch: torch.Tensor, batch_idx: int) -> dict[str, torch.Tensor]:
         return self._shared_eval(batch, batch_idx, "test")
+
+    def training_epoch_end(
+        self,
+        outputs: list[torch.Tensor | dict[str, Any]]
+        | list[list[torch.Tensor | dict[str, Any]]],
+    ) -> None:
+        self._shared_epoch_end(outputs, "train")
 
     def validation_epoch_end(
         self,
@@ -96,13 +112,6 @@ class LightningClassifier(pl.LightningModule):
     ) -> None:
         self._shared_epoch_end(outputs, "test")
 
-    def training_epoch_end(
-        self,
-        outputs: list[torch.Tensor | dict[str, Any]]
-        | list[list[torch.Tensor | dict[str, Any]]],
-    ) -> None:
-        self._shared_epoch_end(outputs, "train")
-
     def _shared_eval(
         self, batch: torch.Tensor, batch_idx: int, prefix: str
     ) -> dict[str, torch.Tensor]:
@@ -110,8 +119,9 @@ class LightningClassifier(pl.LightningModule):
         logits = self.backbone(x)
         preds = logits.softmax(dim=1)
         loss = self.supervised_criterion(preds, y)
-        for metric_name, metric in self.metrics.items():
+        for _, metric in self.metrics[prefix].items():
             metric.update(preds, y)
+
         return {
             "loss": loss,
         }
@@ -127,7 +137,8 @@ class LightningClassifier(pl.LightningModule):
             losses.append(o["loss"] if isinstance(o, dict) else o)
         loss = torch.stack(losses).mean()
         self.log(f"{prefix}/loss", loss)
-        for metric_name, metric in self.metrics.items():
+
+        for metric_name, metric in self.metrics[prefix].items():
             metric_value = metric.compute()
             self.log(f"{prefix}/{metric_name}", metric_value)
             if metric_name == "accuracy":
