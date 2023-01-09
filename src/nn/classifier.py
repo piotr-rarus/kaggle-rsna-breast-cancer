@@ -52,11 +52,6 @@ class LightningClassifier(pl.LightningModule):
             ),
         }
 
-        if num_classes > 5:
-            split_metrics["top5-accuracy"] = torchmetrics.Accuracy(
-                task="multiclass", num_classes=num_classes, top_k=5
-            )
-
         return split_metrics
 
     def configure_optimizers(self) -> dict[str, Any]:
@@ -68,7 +63,7 @@ class LightningClassifier(pl.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
-                "monitor": "val/accuracy",
+                "monitor": "val/loss",
                 "interval": "epoch",
                 "frequency": self.trainer.check_val_every_n_epoch,
             },
@@ -141,5 +136,3 @@ class LightningClassifier(pl.LightningModule):
         for metric_name, metric in self.metrics[prefix].items():
             metric_value = metric.compute()
             self.log(f"{prefix}/{metric_name}", metric_value)
-            if metric_name == "accuracy":
-                self.log(f"{prefix}/error", 1 - metric_value)
