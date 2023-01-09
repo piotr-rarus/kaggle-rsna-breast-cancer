@@ -23,12 +23,14 @@ def prepare_data(
 
 def __prepare_dicom(dicom_path: Path, output_dir: Path, resolution: int) -> None:
     dicom = dcmread(dicom_path)
-    image = normalize_dicom(dicom)
+    image = normalize_dicom(dicom) * 255
     image = image.astype(np.uint8)
 
     height, width = image.shape[0], image.shape[1]
     width = int(width * resolution / height)
     image = cv2.resize(image, dsize=(width, resolution), interpolation=cv2.INTER_AREA)
 
-    image_path = output_dir / f"{dicom_path.stem}.png"
+    patient_id = dicom_path.parent.name
+    image_path = output_dir / patient_id / f"{dicom_path.stem}.png"
+    image_path.parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(image_path), image)
