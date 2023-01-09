@@ -10,7 +10,7 @@ joblib = "^1.2.0"
 jupyter = "^1.0.0"
 opencv-python = "^4.6.0"
 pandas = "^1.4.2"
-pandas-profiling = "^3.5.0"
+pandas-profiling = "^3.6.2"
 plotly = "^5.11.0"
 pydicom = "^2.3.1"
 pylibjpeg = {extras = ["all"], version = "^1.4.0"}
