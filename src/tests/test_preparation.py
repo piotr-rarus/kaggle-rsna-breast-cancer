@@ -18,4 +18,4 @@ def test_prepare_data(tmp_path_factory: TempPathFactory, mock_dicoms_dir: Path) 
     assert image_filepath.suffix == ".png"
     prepared_image = cv2.imread(str(image_filepath), cv2.IMREAD_GRAYSCALE)
     assert prepared_image.shape == (64, 48)
-    assert prepared_image.max() >= 150
+    assert prepared_image.max() >= 220
